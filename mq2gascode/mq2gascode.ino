@@ -15,16 +15,36 @@
 long adcBitReference = 1023; // ADC bit reference, arduino 10 bit = 1023 ADC, ESP32 12 bit = 2045 ADC sampling
 
 long sensorValue = 0;
-float Vcc = 5.0; // board voltage 
+float Vcc = 4.25; // board voltage (default 5.0VDC) but in here I set 4.25 based measure Voltage 
 float Vout = 0.0;
 float RL = 10000.0; // (10k ohm based Fix resistor at board) read PCB wired for makesure resistor value used manufacture
 float Rs = 0.0; 
-float R0 = 7054.13; // this R0 from experiment at clean air (clean air room situation) 
+float R0 = 1675613.797; // this R0 from experiment at clean air (clean air room situation) 
 float RsperR0Ratio = 0.0;
-long ppm = 0;
+float ppm = 0.0;
+
+// now using this, 
+/* long readVcc(){
+  long result;
+
+  ADMUX = _BV(REFS0) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
+  delay(2);
+  ADCSRA |= _BV(ADSC);
+  while (bit_is_set(ADCSRA, ADSC));
+
+  result = ADCL;
+  result |= ADCH << 8;
+
+  result = 1125300L / result;
+  Vcc = result / 1000.0;
+} */
+
+float vout(long readAnalog){
+  return readAnalog * (Vcc / adcBitReference);
+}
 
 float getR0(long readAnalog){
-  Vout = readAnalog * (Vcc / adcBitReference); // Vout : 1023 is 10 bit ADC reference for Arduino, make sure check your ADC bit reference before
+  Vout = vout(readAnalog);  // Vout : 1023 is 10 // Vout : 1023 is 10 bit ADC reference for Arduino, make sure check your ADC bit reference before
   Rs = (Vcc - Vout) / Vout * RL;
 
   R0 = Rs / airreference;
@@ -32,8 +52,8 @@ float getR0(long readAnalog){
   return R0;
 }
 
-long getPPM(long readAnalog, float R0){
-  Vout = sensorValue * (Vcc / adcBitReference); // Vout : 1023 is 10 bit ADC reference for Arduino, make sure check your ADC bit reference before
+float getPPM(long readAnalog, float R0){
+  Vout = vout(readAnalog); // Vout : 1023 is 10 bit ADC reference for Arduino, make sure check your ADC bit reference before
   Rs = (Vcc - Vout) / Vout * RL;
 
   RsperR0Ratio = Rs/R0;
@@ -41,7 +61,7 @@ long getPPM(long readAnalog, float R0){
   // regression 
   ppm = pow(10, ((slope) * log10(RsperR0Ratio) + intercept));
 
-  return ppm * 100;
+  return ppm;
 }
 
 
@@ -58,7 +78,6 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
 
   sensorValue = analogRead(MQ2pin);
 
@@ -66,7 +85,19 @@ void loop() {
   // float R0data = getR0(sensorValue);
   
   float data = getPPM(sensorValue, R0);
-  
+
+//  Serial.print("Rs: ");
+//  Serial.println(Rs);
+//
+//  Serial.print("R0: ");
+//  Serial.println(R0);
+//
+//  Serial.print("RsperR0Ratio: ");
+//  Serial.println(RsperR0Ratio);
+
+//  Serial.print("Log: ");
+//  Serial.println(log10(RsperR0Ratio));
+
   Serial.print(millis());
   Serial.print(",");
   Serial.println(data);

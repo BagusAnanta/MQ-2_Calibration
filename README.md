@@ -1,19 +1,13 @@
 # MQ-2 Sensor Gas Calibration 
 
-- MQ-2 sensing at normal condition
-![Sensing at normal condition](BeforeContGas.png "Sensing at normal condition")
-
-- MQ-2 sensing at gas target 
-![Sensing at LPG gas target](AfterContGas.png "Sensing at LPG gas target")
-
 Arduino code program for result MQ-2 calibration using Regression Linear based MQ-2 Datasheet and output result as PPM (Part per Million). 
-this project use arduino uno microcontroller with 1023 ADC reference and 5.0 VDC, and sensor (MQ-2) with RL 10k ohm (can see resistor back at PCB sensor) and R0 is sensing resistance at clean air condition.
+this project use arduino uno microcontroller with 1023 ADC reference and 4.25 VDC (based measure voltage use multimeter), and sensor (MQ-2) with RL 10k ohm (can see resistor back at PCB sensor) and R0 is sensing resistance at clean air condition.
 and test subject for MQ-2, use LPG (Liquefied Petroleum Gas) or iso-butene/ 2-Methylpropene C4H8.
 
 ---
 
 ## Why must calibration sensor ?
-while I school and learn IoT system from real case, sensor its very risk return unexpected result (out of range, etc).
+while I school and learn IoT system from real case, sensor its very risk return unstable result.
 sensor can return error result, it cause much factor and condition from different condition while sensing, environtment, temperature and humidity condition and more can cause error while sensor sensing a target.
 thats why sensor should calibrate at new environtment for makesure sensor can sensing stable and at least 80 - 90% return stable result.
 
@@ -26,7 +20,7 @@ thats why sensor should calibrate at new environtment for makesure sensor can se
 - slope (m) : Linear regression slope / m 
 - intercept (c) : Linear regression intercept /c 
 - adcBitReference : ADC reference (makesure change this adc if using another microcontroller, see microcontroller documentation ADC reference)
-- Vcc : DC board voltage (5.0 VDC recommendation)  
+- Vcc : DC board voltage (5.0 VDC recommendation) or you can measure voltage output using multimeter  
 - RL : Load resistor (many manufacture already fixed RL at board makesure check resistor at back sensor board)
 - R0 : Sensing resistor at clean air, run getR0(readAnalog) for get R0 value (see information function at Function Description section)
 
@@ -59,7 +53,7 @@ Calibration :
   preheat sensor at 30 minute and use getR0 function at 10 minute.
 
   ```cpp
-  long getPPM(long readAnalog, float R0)
+  float getPPM(long readAnalog, float R0)
   ```
   
   return sensing resistance gas target and return into PPM value, **long readAnalog** parameter based from analog read function, **float R0** parameter for R0.
