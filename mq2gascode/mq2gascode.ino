@@ -102,6 +102,13 @@ void loop() {
   Serial.print(",");
   Serial.println(data);
 
+  if(data <= minTreshold){
+    Serial.println("No gas Detected");  
+  } else if(data >= minTreshold && data <= maxTreshold){
+    Serial.println("Gas Detected, warning");
+  }
+
+
   delay(2000);
 
 }
